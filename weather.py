@@ -10,6 +10,14 @@ gi.require_version('Gtk', '3.0')
 # add error handling
 
 def get_city():
+    """
+    check first if user has manually set a city
+    :return:
+    """
+    with open('./defaults.json') as file:
+        data = json.load(file)
+    if data["city"] != "auto":
+        return data["city"]
     send_url = 'http://freegeoip.net/json'
     try:
         request = requests.get(send_url)
@@ -79,7 +87,7 @@ class Indicator:
         self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
         self.indicator.set_menu(self.create_menu(data))
         self.indicator.set_label(data["city"] + " - " + data["temp"] + " °C", self.app)
-        GObject.timeout_add(1000*60, self.refresh)
+        GObject.timeout_add(1000*60*10, self.refresh)
 
     def refresh(self):
         data = get_weather()
@@ -96,7 +104,11 @@ class Indicator:
         menu.append(item_2)
         menu_sep = Gtk.SeparatorMenuItem()
         menu.append(menu_sep)
-
+        item3 = Gtk.MenuItem("Change City")
+        item3.connect('activate', self.entry)
+        menu.append(item3)
+        menu_sep = Gtk.SeparatorMenuItem()
+        menu.append(menu_sep)
         item_quit = Gtk.MenuItem('Quit')
         item_quit.connect('activate', self.quit)
         menu.append(item_quit)
@@ -104,16 +116,78 @@ class Indicator:
         menu.show_all()
         return menu
 
+    def entry(self, src):
+        SettingsWindow()
     def quit(self, src):
         exit(0)
 
 
+class SettingsWindow:
+    def __init__(self):
+        # create a new window
+        self.window = Gtk.Window()
+        self.window.set_size_request(400, 300)
+        self.window.set_title("Settings")
+        self.window.connect("delete_event", self.quit)
+
+        self.vbox = Gtk.VBox(False, 0)
+        self.window.add(self.vbox)
+        self.vbox.show()
+
+        self.entry = Gtk.Entry()
+        self.entry.set_max_length(20)
+        self.entry.connect("activate", self.enter_callback, self.entry)
+        self.entry.set_text("Enter City name")
+        self.entry.select_region(0, len(self.entry.get_text()))
+        self.vbox.pack_start(self.entry, False, True, 0)
+        self.entry.show()
+
+        self.hbox = Gtk.HBox(False, 0)
+        self.vbox.add(self.hbox)
+        self.hbox.show()
+
+        self.check = Gtk.CheckButton("AutoDetect City")
+        self.hbox.pack_start(self.check, True, True, 0)
+        self.check.set_active(True)
+        self.check.show()
+
+        self.button = Gtk.Button("Done")
+        self.button.connect("clicked", self.enter_callback)
+        self.vbox.pack_start(self.button, True, True, 0)
+        self.button.grab_default()
+        self.button.show()
+        self.window.show()
+
+    def enter_callback(self, src):
+        entry_text = self.entry.get_text()
+        if not self.check.get_active():
+            with open('./defaults.json') as file:
+                data = json.load(file)
+            data["city"] = entry_text.lower()
+
+            with open('./defaults.json') as file:
+                json.dump(data, file)
+        else:
+            with open('./defaults.json') as file:
+                data = json.load(file)
+            data["city"] = "auto"
+
+            with open('./defaults.json') as file:
+                json.dump(data, file)
+        # reload()
+
+    def quit(self, src, foo):
+        del self.window
+
+
+def reload():
+    stats = get_weather()
+    Indicator(stats)
+
 def main():
     stats = get_weather()
-    widget = Indicator(stats)
+    Indicator(stats)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     Gtk.main()
-
-
 if __name__ == '__main__':
     main()
