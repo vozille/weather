@@ -1,1 +1,1 @@
-{"weather": "clear sky", "temp": "32.25", "humidity": "80", "city": "Patna"}
+{"humidity": "80", "weather": "clear sky", "temp": "32.25", "city": "Patna"}
