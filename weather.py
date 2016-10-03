@@ -9,6 +9,7 @@ gi.require_version('Gtk', '3.0')
 
 # add error handling
 
+
 def get_city():
     """
     check first if user has manually set a city
@@ -42,7 +43,8 @@ def get_weather():
         return data
 
     try:
-        params = {'APPID': '1d02acb0a01b4471272e58de491565e4', 'q': city.lower(), 'units' : 'metric'}
+        params = {'APPID': '1d02acb0a01b4471272e58de491565e4', 'q': city.lower(), 'units': 'metric'}
+        print(params)
         city_weather = requests.get('http://api.openweathermap.org/data/2.5/weather?', params=params)
         # internet connection lost midway
         if city_weather.status_code == 200:
@@ -86,13 +88,14 @@ class Indicator:
             AppIndicator3.IndicatorCategory.OTHER)
         self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
         self.indicator.set_menu(self.create_menu(data))
-        self.indicator.set_label(data["city"] + " - " + data["temp"] + " °C", self.app)
+        self.indicator.set_label(data["city"] + " : " + data["temp"] + " °C", self.app)
+        # sets the reload timer, in milliseconds
         GObject.timeout_add(1000*60*10, self.refresh)
 
     def refresh(self):
         data = get_weather()
         self.indicator.set_menu(self.create_menu(data))
-        self.indicator.set_label(data["city"] + " - " + data["temp"] + " °C", self.app)
+        self.indicator.set_label(data["city"] + " : " + data["temp"] + " °C", self.app)
         return True
 
     def create_menu(self, data):
@@ -118,6 +121,7 @@ class Indicator:
 
     def entry(self, src):
         SettingsWindow()
+
     def quit(self, src):
         exit(0)
 
@@ -126,7 +130,7 @@ class SettingsWindow:
     def __init__(self):
         # create a new window
         self.window = Gtk.Window()
-        self.window.set_size_request(400, 300)
+        self.window.set_size_request(200, 100)
         self.window.set_title("Settings")
         self.window.connect("delete_event", self.quit)
 
@@ -136,9 +140,7 @@ class SettingsWindow:
 
         self.entry = Gtk.Entry()
         self.entry.set_max_length(20)
-        self.entry.connect("activate", self.enter_callback, self.entry)
         self.entry.set_text("Enter City name")
-        self.entry.select_region(0, len(self.entry.get_text()))
         self.vbox.pack_start(self.entry, False, True, 0)
         self.entry.show()
 
@@ -148,7 +150,7 @@ class SettingsWindow:
 
         self.check = Gtk.CheckButton("AutoDetect City")
         self.hbox.pack_start(self.check, True, True, 0)
-        self.check.set_active(True)
+        self.check.set_active(False)
         self.check.show()
 
         self.button = Gtk.Button("Done")
@@ -159,35 +161,36 @@ class SettingsWindow:
         self.window.show()
 
     def enter_callback(self, src):
+
         entry_text = self.entry.get_text()
         if not self.check.get_active():
-            with open('./defaults.json') as file:
+            with open('./defaults.json', 'r') as file:
                 data = json.load(file)
             data["city"] = entry_text.lower()
-
-            with open('./defaults.json') as file:
+            print(data)
+            with open('./defaults.json', 'w') as file:
                 json.dump(data, file)
         else:
-            with open('./defaults.json') as file:
+            with open('./defaults.json', 'r') as file:
                 data = json.load(file)
             data["city"] = "auto"
-
-            with open('./defaults.json') as file:
+            with open('./defaults.json', 'w') as file:
                 json.dump(data, file)
-        # reload()
+        self.window.destroy()
+        tray.refresh()
+
+
 
     def quit(self, src, foo):
         del self.window
 
-
-def reload():
-    stats = get_weather()
-    Indicator(stats)
-
+tray = None
 def main():
+    global tray
     stats = get_weather()
-    Indicator(stats)
+    tray = Indicator(stats)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     Gtk.main()
+
 if __name__ == '__main__':
     main()

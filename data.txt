@@ -1,1 +1,1 @@
-{"city": "Dhanbad", "temp": "30.3", "humidity": "63", "weather": "scattered clouds"}
+{"temp": "26.01", "humidity": "90", "weather": "moderate rain", "city": "cuttack"}
