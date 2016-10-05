@@ -15,7 +15,7 @@ def get_city():
     check first if user has manually set a city
     :return:
     """
-    with open('./defaults.json') as file:
+    with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json') as file:
         data = json.load(file)
     if data["city"] != "auto":
         return data["city"]
@@ -38,7 +38,7 @@ def get_weather():
     # no internet
     if city is None:
         print('no internet connection')
-        with open('./data.txt') as file:
+        with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt') as file:
             data = json.load(file)
         return data
 
@@ -53,7 +53,7 @@ def get_weather():
             icon = requests.get('http://openweathermap.org/img/w/' + weather_details["weather"][0]["icon"] + '.png',
                                 stream=True)
             if icon.status_code == 200:
-                with open('./icon.png', 'wb') as f:
+                with open('/home/anwesh/PycharmProjects/myapps/Weather/icon.png', 'wb') as f:
                     for chunk in icon:
                         f.write(chunk)
             data = dict()
@@ -63,18 +63,18 @@ def get_weather():
             )
             data["weather"] = weather_details["weather"][0]["description"]
             data["humidity"] = str(weather_details["main"]["humidity"])
-            with open('./data.txt', 'w') as file:
+            with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt', 'w') as file:
                 json.dump(data, file)
 
             return data
         else:
             print('no internet connection')
-            with open('./data.txt') as file:
+            with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt') as file:
                 data = json.load(file)
                 return data
     except requests.ConnectionError:
         print('we lost internet connection')
-        with open('./data.txt') as file:
+        with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt') as file:
             data = json.load(file)
             return data
 
@@ -164,17 +164,17 @@ class SettingsWindow:
 
         entry_text = self.entry.get_text()
         if not self.check.get_active():
-            with open('./defaults.json', 'r') as file:
+            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'r') as file:
                 data = json.load(file)
             data["city"] = entry_text.lower()
             print(data)
-            with open('./defaults.json', 'w') as file:
+            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'w') as file:
                 json.dump(data, file)
         else:
-            with open('./defaults.json', 'r') as file:
+            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'r') as file:
                 data = json.load(file)
             data["city"] = "auto"
-            with open('./defaults.json', 'w') as file:
+            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'w') as file:
                 json.dump(data, file)
         self.window.destroy()
         tray.refresh()

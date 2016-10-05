@@ -1,1 +1,1 @@
-{"temp": "26.01", "humidity": "90", "weather": "moderate rain", "city": "cuttack"}
+{"humidity": "98", "weather": "clear sky", "city": "cuttack", "temp": "28.87"}
