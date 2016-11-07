@@ -3,7 +3,7 @@ import json
 import signal
 import gi
 from gi.repository import Gtk, AppIndicator3, GObject
-
+import subprocess
 gi.require_version('Gtk', '3.0')
 
 
@@ -62,7 +62,24 @@ def get_weather():
                 round(float((weather_details["main"]["temp_max"]) + float(weather_details["main"]["temp_min"])) / 2, 2)
             )
             data["weather"] = weather_details["weather"][0]["description"]
+
             data["humidity"] = str(weather_details["main"]["humidity"])
+            data["wind"] = str(weather_details["wind"]["speed"])
+
+            """
+            date returned is in epoch/unix time.. convert to human readable time
+            the data from shell is in bytes
+            convert to string and strip newline character
+            """
+            sunrise = subprocess.check_output(
+                    "date --date='@" + str(weather_details["sys"]["sunrise"]) +
+                    "' '+%r'", shell=True)
+            data["sunrise"] = sunrise.decode("utf-8").strip('\n')
+            sunset = subprocess.check_output(
+                "date --date='@" + str(weather_details["sys"]["sunset"]) +
+                "' '+%r'", shell=True)
+            data["sunset"] = sunset.decode("utf-8").strip('\n')
+
             with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt', 'w') as file:
                 json.dump(data, file)
 
@@ -105,6 +122,12 @@ class Indicator:
         menu.append(item_1)
         item_2 = Gtk.MenuItem('humidity: '+data["humidity"]+'%')
         menu.append(item_2)
+        item_3 = Gtk.MenuItem('wind-speed: ' + data["wind"] + 'km/hr')
+        menu.append(item_3)
+        item_4 = Gtk.MenuItem('sunrise: ' + data["sunrise"])
+        menu.append(item_4)
+        item_5 = Gtk.MenuItem('sunset: ' + data["sunset"])
+        menu.append(item_5)
         menu_sep = Gtk.SeparatorMenuItem()
         menu.append(menu_sep)
         item3 = Gtk.MenuItem("Change City")

@@ -1,1 +1,1 @@
-{"humidity": "98", "weather": "clear sky", "city": "cuttack", "temp": "28.87"}
+{"humidity": "88", "weather": "mist", "wind": "2.02", "sunrise": "05:51:53 AM", "temp": "20.0", "city": "cuttack", "sunset": "05:08:15 PM"}
