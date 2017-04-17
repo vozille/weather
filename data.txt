@@ -1,1 +1,1 @@
-{"sunrise": "05:51:53 AM", "city": "cuttack", "humidity": "88", "weather": "mist", "temp": "20.0", "sunset": "05:08:15 PM", "wind": "2.02"}
+{"humidity": "28", "sunrise": "05:48:44 PM", "wind": "1.5", "city": "denver", "sunset": "07:10:36 AM", "temp": "14.0", "weather": "scattered clouds"}

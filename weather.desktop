@@ -3,6 +3,6 @@ Name=Weather
 Comment=this file must be ~/.config/autostart in debian. Exec refers to execution path of the script. Change Accordingly
 Categories=GNOME;Utility;
 Exec= python3 /home/anwesh/PycharmProjects/myapps/Weather/weather.py
-Icon=/home/anwesh/PycharmProjects/myapps/Weather/icon.png
+Icon=/home/anwesh/code/myapps/projects/Weather/icon.png
 Terminal=false
 Type=Application

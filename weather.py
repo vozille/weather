@@ -9,13 +9,21 @@ gi.require_version('Gtk', '3.0')
 
 # add error handling
 
+"""
+Constants
+"""
+
+DEFAULT_DATA_PATH = "/home/anwesh/code/myapps/projects/Weather/defaults.json"
+DEFAULT_RAW_DATA = "/home/anwesh/code/myapps/projects/Weather/data.txt"
+DEFAULT_ICON_PATH = "/home/anwesh/code/myapps/projects/Weather/icon.png"
+
 
 def get_city():
     """
     check first if user has manually set a city
     :return:
     """
-    with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json') as file:
+    with open(DEFAULT_DATA_PATH) as file:
         data = json.load(file)
     if data["city"] != "auto":
         return data["city"]
@@ -38,7 +46,7 @@ def get_weather():
     # no internet
     if city is None:
         print('no internet connection')
-        with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt') as file:
+        with open(DEFAULT_RAW_DATA) as file:
             data = json.load(file)
         return data
 
@@ -50,10 +58,10 @@ def get_weather():
         if city_weather.status_code == 200:
             weather_details = json.loads(city_weather.text)
             print(weather_details)
-            icon = requests.get('http://openweathermap.org/img/w/' + weather_details["weather"][0]["icon"] + '.png',
-                                stream=True)
+            icon_link_url = 'http://openweathermap.org/img/w/' + weather_details["weather"][0]["icon"] + '.png'
+            icon = requests.get(icon_link_url, stream=True)
             if icon.status_code == 200:
-                with open('/home/anwesh/PycharmProjects/myapps/Weather/icon.png', 'wb') as f:
+                with open(DEFAULT_ICON_PATH, 'wb') as f:
                     for chunk in icon:
                         f.write(chunk)
             data = dict()
@@ -80,18 +88,18 @@ def get_weather():
                 "' '+%r'", shell=True)
             data["sunset"] = sunset.decode("utf-8").strip('\n')
 
-            with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt', 'w') as file:
+            with open(DEFAULT_RAW_DATA, 'w') as file:
                 json.dump(data, file)
 
             return data
         else:
             print('no internet connection')
-            with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt') as file:
+            with open(DEFAULT_RAW_DATA) as file:
                 data = json.load(file)
                 return data
     except requests.ConnectionError:
         print('we lost internet connection')
-        with open('/home/anwesh/PycharmProjects/myapps/Weather/data.txt') as file:
+        with open(DEFAULT_RAW_DATA) as file:
             data = json.load(file)
             return data
 
@@ -99,9 +107,8 @@ def get_weather():
 class Indicator:
     def __init__(self, data):
         self.app = 'weather_app'
-        iconpath = "/home/anwesh/PycharmProjects/myapps/Weather/icon.png"
         self.indicator = AppIndicator3.Indicator.new(
-            self.app, iconpath,
+            self.app, DEFAULT_ICON_PATH,
             AppIndicator3.IndicatorCategory.OTHER)
         self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
         self.indicator.set_menu(self.create_menu(data))
@@ -187,27 +194,27 @@ class SettingsWindow:
 
         entry_text = self.entry.get_text()
         if not self.check.get_active():
-            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'r') as file:
+            with open(DEFAULT_DATA_PATH, 'r') as file:
                 data = json.load(file)
             data["city"] = entry_text.lower()
             print(data)
-            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'w') as file:
+            with open(DEFAULT_DATA_PATH, 'w') as file:
                 json.dump(data, file)
         else:
-            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'r') as file:
+            with open(DEFAULT_DATA_PATH, 'r') as file:
                 data = json.load(file)
             data["city"] = "auto"
-            with open('/home/anwesh/PycharmProjects/myapps/Weather/defaults.json', 'w') as file:
+            with open(DEFAULT_DATA_PATH, 'w') as file:
                 json.dump(data, file)
         self.window.destroy()
         tray.refresh()
-
-
 
     def quit(self, src, foo):
         del self.window
 
 tray = None
+
+
 def main():
     global tray
     stats = get_weather()
